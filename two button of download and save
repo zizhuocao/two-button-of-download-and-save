@@ -1,0 +1,58 @@
+/////////////////////////////////////save pdf into personal profile
+/////////////////////////////////////
+/////////////////////////////////////
+add_shortcode('resource_query_result', 'resource_query_result');
+function resource_query_result ($atts, $content = null ){
+
+    $entry_id = $_GET['eid'];
+    $hash = $_GET['hash'];
+    $title=$_GET['title'];
+    $current_user=wp_get_current_user();
+    $userid=$current_user->ID;
+    if(!$entry_id || !$hash){
+        wp_redirect( home_url() ); exit;
+    }
+    // Compare hash
+    $hash_to_compare = wp_hash($entry_id);
+
+    if($hash != $hash_to_compare){
+        wp_redirect( home_url() ); exit;
+    }
+
+    $entry = GFAPI::get_entry( $entry_id );
+    $form = GFAPI::get_form( $entry['form_id'] );
+
+    $basicScore = $entry[67];
+    $rhetoricalScore = $entry[68];
+    $criticalScore = $entry[69];
+    $emotionalScore = $entry[70];
+    $occupationalScore = $entry[71];
+    $ethicalScore = $entry[72];
+    $base_pdf_link = '/pdf/595d8b9bd4f8d/';
+
+    $nonce = wp_create_nonce( "graph-image-nonce" );
+    $adminAjaxUrl = admin_url('admin-ajax.php');
+    $site_url = site_url();
+
+    $html = "
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js'></script>
+    <div id='chartContainer' ><canvas id='myChart' width='900' height='600'></canvas></div> 
+    < img id='myImage' src='' alt='' style='width: 700px;'>
+    <div>
+        <a href=' ' target='_blank'>
+            Download Your Report
+        </a >
+    </div>
+    <div style='margin-top: 14px;'>
+          <a href='{$site_url}/home3/write.php?hash={$site_url}{$base_pdf_link}{$entry_id}/download/?hash={$hash}&title={$title}&userid={$userid}' target='_blank'>
+             Click here to save your result
+          </a >
+    </div>";
+
+    $htmlScript =  "<script>
+  jQuery(function(){
+       var nonce = '{$nonce}';
+       var hash = '{$hash}';
+
+       data =  {
+                                labels: ['Basic literacy', 'Rhetorical literacy', ['Personal and','critica
